@@ -40,7 +40,17 @@ identity() {
     fi
 }
 fault() { printf '%s\n' "$*" > "$state/fault"; }
-status() { printf '%s\n' "$1" > "$state/status"; }
+status() {
+    printf '%s\n' "$1" > "$state/status" || return 1
+    # Reporting is bounded and best effort; it must not change control decisions.
+    if [ "$1" != "${display_phase:-}" ] || [ "$((${now:-0} - ${display_checked:-0}))" -ge 60 ]; then
+        display_phase=$1
+        display_checked=${now:-0}
+        timeout -s TERM -k 1 2 setsid sh "${0%/*}/bounded-command.sh" sh "${0%/*}/display.sh" \
+            publish "$state" "$module" "$1" || printf 'The module-card status cannot update.\n' >&2
+    fi
+    return 0
+}
 recover() {
     [ -f "$journal" ] || return 0
     if operation 20 recover "$journal"; then
@@ -168,6 +178,7 @@ supervise() {
         printf '%s\n' "$boot" > "$state/boot"
     fi
     [ ! -f "$state/fault" ] && ! stopping || return 1
+    status Starting
     operation 4 compatible || { fault 'Unsupported kernel, ROM, or charging interface.'; return 1; }
     printf '%s %s\n' "$$" "$(identity "$$")" > "$state/guard"
     heartbeat guard-heartbeat && heartbeat controller-heartbeat || return 1

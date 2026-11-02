@@ -1,6 +1,6 @@
 # Charge Guard
 
-Historical version 1.0.1, imported from its release ZIP.
+Historical version 1.0.2, imported from its release ZIP.
 Use version 1.0.5 for the latest diagnostics and fixes.
 See [CHANGELOG.md](CHANGELOG.md) for import provenance and release changes.
 
@@ -17,8 +17,14 @@ The internal module ID is `lavender_battery_guard`.
 ## Install
 
 Build with `uv run --no-project python build.py`.
-Install `dist/charge-guard-1.0.1.zip` through Magisk Modules and reboot.
+Install `dist/charge-guard-1.0.2.zip` through Magisk Modules and reboot.
 No Magisk core build is required.
+
+## Status
+
+The card shows the last reported state and timestamp.
+Magisk caches this text; restart the app to refresh it.
+The relative Action invocation has a known issue fixed in version 1.0.4.
 
 ## Recovery and limits
 
