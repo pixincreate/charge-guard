@@ -6,6 +6,11 @@ The import preserves production logic and adds license notices, cleaned document
 The latest snapshot includes the available regression tests after fixture cleanup.
 Original release ZIPs are not tracked; the signed tags record their SHA-256 hashes.
 
+## 1.0.3
+
+- Put the reported state in brackets and separate card details with vertical bars.
+- This historical version retains the relative Action invocation issue fixed in 1.0.4.
+
 ## 1.0.2
 
 - Add timestamped module-card status and a read-only Action check.

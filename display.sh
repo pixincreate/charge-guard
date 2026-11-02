@@ -44,7 +44,7 @@ case "$operation" in
         case "$phase" in Starting|Charging|Holding|Released|Stopped|Fault) ;; *) exit 2 ;; esac
         [ -f "$module/module.prop" ] && [ ! -L "$module/module.prop" ] || exit 1
         checked=$(date -u '+%Y-%m-%d %H:%M:%S UTC') || exit 1
-        description="Last reported: $phase; checked $checked. Stop 70%; resume 65%. Use Action for a current check."
+        description="[$phase] Last reported: $checked | Stop 70%; resume 65% | Action: current check."
         temporary=$(mktemp "$module/.module.prop.XXXXXX") || exit 1
         trap 'rm -f "$temporary"' EXIT
         cp -p "$module/module.prop" "$temporary" || exit 1
