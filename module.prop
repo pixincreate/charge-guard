@@ -3,4 +3,4 @@ name=Charge Guard
 version=1.0.6
 versionCode=7
 author=PiX
-description=[Not started] Reboot to activate. Stop charging at 70%; resume at 65%. For the verified lavender kernel only.
+description=[Not started] Charge control and diagnostics. Stop at 70%; resume at 65%. Reboot to activate. Verified Redmi Note 7/7S kernel only.
