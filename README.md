@@ -14,11 +14,26 @@ This is not battery isolation or a guarantee against battery aging.
 
 Other kernel builds are rejected, even if their version strings match.
 Do not use another charging-control module or change the ROM charging configuration while Charge Guard operates.
-The internal module ID remains `lavender_battery_guard` for update compatibility.
+The module ID is `charge_guard`.
+
+## Migrate from the earlier module ID
+
+Versions 1.0.1–1.0.5 use the ID `lavender_battery_guard`.
+The new ID is a separate module in Magisk, not an in-place update.
+
+1. Remove the old module in Magisk, then reboot.
+2. Confirm that the old module is absent and ROM charging control is enabled in limit mode at 70%.
+3. If recovery fails or its result is unclear, inspect the fault and journal before proceeding.
+4. Install the renamed module as described below, then reboot again.
+
+Disabling the old module is not sufficient.
+The installer rejects an old-ID directory in either `/data/adb/modules` or `/data/adb/modules_update`, including disabled or removal-marked copies.
+Do not install the old ZIP again while the new module is installed.
+The persistent recovery path remains `/data/adb/lavender-battery-guard`; do not rename or delete it during migration.
 
 ## Install
 
-1. Build `dist/charge-guard-1.0.5.zip`, or obtain that ZIP from the project owner.
+1. Build `dist/charge-guard-1.0.6.zip`, or obtain that ZIP from the project owner.
 2. In Magisk, select **Modules → Install from storage** and select the ZIP.
 3. Reboot.
 

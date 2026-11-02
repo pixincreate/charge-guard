@@ -6,6 +6,12 @@ The import preserves production logic and adds license notices, cleaned document
 The latest snapshot includes the available regression tests after fixture cleanup.
 Original release ZIPs are not tracked; the signed tags record their SHA-256 hashes.
 
+## 1.0.6
+
+- Change the module ID to `charge_guard` and keep the display name Charge Guard.
+- Reject installation while the previous ID is installed or pending installation, and document migration without deleting recovery data.
+- Verify the captured ROM policy before completing recovery, and retain startup recovery faults until another boot.
+
 ## 1.0.5
 
 - Rename the module to Charge Guard without changing its internal ID.
