@@ -183,13 +183,14 @@ supervise() {
     trap 'supervisor_exit $?' EXIT
     trap 'exit 1' HUP INT TERM
     exec 9> "$state/writer.lock"
-    timeout -s KILL 30 flock 9 && recover || return 1
-    exec 9>&-
+    timeout -s KILL 30 flock 9 || return 1
     boot=$(operation 4 boot) || return 1
     if [ ! -f "$state/boot" ] || [ "$(cat "$state/boot")" != "$boot" ]; then
-        rm -f "$state/fault" "$state/stop"
-        printf '%s\n' "$boot" > "$state/boot"
+        printf '%s\n' "$boot" > "$state/boot.next" && mv "$state/boot.next" "$state/boot" || return 1
+        rm -f "$state/fault" "$state/stop" || return 1
     fi
+    recover || return 1
+    exec 9>&-
     [ ! -f "$state/fault" ] && ! stopping || return 1
     status Starting
     operation 4 compatible || { fault 'Unsupported kernel, ROM, or charging interface.'; return 1; }

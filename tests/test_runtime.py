@@ -291,6 +291,33 @@ else: sys.exit(2)
         self.assertEqual(self.value("fcc"), "1800000")
         self.assertFalse((self.state / "journal").exists())
 
+    def test_failed_startup_recovery_stays_latched_until_another_boot(self):
+        import json
+        (self.state / "boot").write_text("old-boot")
+        (self.state / "journal").write_text(json.dumps({"fcc": "2900000", "mode": "444",
+                                                       "enabled": "1", "boot": "old-boot"}))
+        (self.home / "enabled").write_text("0")
+        (self.home / "fail-recovery").touch()
+        failed = self.start()
+        failed.communicate(timeout=15)
+        self.assertNotEqual(failed.returncode, 0)
+        self.assertTrue(self.status("Fault"))
+
+        (self.home / "fail-recovery").unlink()
+        retry = self.start()
+        retry.communicate(timeout=15)
+        self.assertNotEqual(retry.returncode, 0)
+        self.assertTrue(self.status("Fault"))
+        self.assertTrue((self.state / "fault").exists())
+        self.assertFalse((self.state / "journal").exists())
+        self.assertEqual(self.value("enabled"), "1")
+
+        (self.home / "boot").write_text("boot-b")
+        rebooted = self.start()
+        self.wait_for(lambda: self.status("Charging"))
+        self.assertFalse((self.state / "fault").exists())
+        self.finish(rebooted)
+
     def test_remove_marker_restores_without_a_fault(self):
         process = self.start()
         self.wait_for(lambda: self.status("Charging"))

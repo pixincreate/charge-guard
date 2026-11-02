@@ -196,6 +196,7 @@ case "$operation" in
             # Restore persistent policy even after a kernel update. Do not replay old FCC.
             set_enabled "$(field enabled)" || exit 1
             limit_ready || exit 1
+            policy 1 || exit 1
             if [ "$same_boot" = 1 ]; then
                 write_fcc "$original" && hardware "$original" || exit 1
             fi
