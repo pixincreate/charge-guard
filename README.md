@@ -9,13 +9,12 @@ Only the tested kernel build is accepted; other builds are blocked.
 
 ## Install
 
-If you use version 1.0.1–1.0.5, remove the old module in Magisk and reboot first.
-Disabling it is not enough.
-
 1. Enable Android's charging limit and set it to 70%.
-2. Build the ZIP below.
+2. Download `charge-guard-1.0.6.zip` from [Releases](https://github.com/pixincreate/charge-guard/releases/latest), under **Assets**.
 3. Select the ZIP in **Magisk → Modules → Install from storage**.
 4. Reboot and tap **Action** to check that it works.
+
+Do not install GitHub's **Source code** ZIP.
 
 ## Status
 
@@ -32,7 +31,7 @@ Restart Magisk to refresh it; switching tabs does not work.
 - At 40°C or after a failed check, the module tries to restore Android's charging control and stops until reboot. Check Action if it reports `Fault`; failed recovery can leave charging stopped.
 - Do not use another charging module or change Android's charging settings while this module runs.
 - If the module is disabled or missing after an unexpected reboot, Android's charging control can stay off. Turn it back on in battery settings.
-- Do not delete `/data/adb/lavender-battery-guard`. It stores recovery data, including data needed when moving from the old module.
+- Do not delete `/data/adb/lavender-battery-guard`. It stores recovery data.
 
 Uninstall through Magisk, then reboot.
 This is a prototype: resuming at 65% and long-term operation remain unverified on the phone.
