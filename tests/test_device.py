@@ -59,9 +59,12 @@ elif command == 'content':
     value = (p / keys[key]).read_text().strip()
     print('No result found.' if value == 'absent' else 'Row: 0 value=' + value)
 elif command == 'dumpsys':
-    enabled = 'true' if (p / 'enabled').read_text().strip() == '1' else 'false'
-    print('Enabled:', enabled)
-    print('mIsEnabled:', enabled)
+    if (p / 'service').exists():
+        print((p / 'service').read_text(), end='')
+    else:
+        enabled = 'true' if (p / 'enabled').read_text().strip() == '1' else 'false'
+        print('Enabled:', enabled)
+        print('mIsEnabled:', enabled)
 else:
     sys.exit(2)
 ''')
@@ -148,6 +151,24 @@ timeout() (
         self.assertNotEqual(result.returncode, 0, result.stdout)
         self.assertEqual(self.value("enabled"), "1")
         self.assertEqual(self.value("battery/constant_charge_current_max"), "0")
+
+    def test_service_diagnostics_preserve_values_and_first_match(self):
+        cases = (
+            ("Enabled: true\nmIsEnabled: false\nMode: 3\nLimit: 70\n", ("1", "0", "3", "70")),
+            ("", ("Unavailable",) * 4),
+            ("Enabled: 1\nmIsEnabled: TRUE\nMode: true\nLimit: false\n", ("Unavailable",) * 4),
+            ("Enabled: false\nEnabled: true\nmIsEnabled: true\nmIsEnabled: false\n"
+             "Mode:\nMode: 3\nLimit: 070\nLimit: 100\n", ("0", "1", "Unavailable", "070")),
+        )
+        keys = ("rom_service_enabled", "rom_service_active", "rom_mode", "rom_limit")
+        for service, values in cases:
+            with self.subTest(service=service):
+                (self.home / "service").write_text(service)
+                result = subprocess.run(["sh", str(self.wrapper), "diagnostics"],
+                                        env=self.environment, capture_output=True, text=True, timeout=10)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                actual = [line for line in result.stdout.splitlines() if line.split("=", 1)[0] in keys]
+                self.assertEqual(actual, [f"{key}={value}" for key, value in zip(keys, values)])
 
 
 if __name__ == "__main__":

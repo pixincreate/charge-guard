@@ -12,7 +12,8 @@ ROOT = Path(__file__).resolve().parent
 PAYLOAD = (
     "module.prop", "customize.sh", "service.sh", "runtime.sh", "device.sh",
     "bounded-command.sh", "recovery-ready.sh", "uninstall.sh", "README.md", "LICENSE",
-) + tuple(name for name in ("display.sh", "action.sh") if (ROOT / name).is_file())
+    "display.sh", "action.sh",
+)
 
 
 def build():

@@ -136,18 +136,21 @@ case "$operation" in
         printf 'kernel_release=%s\n' "$(uname -r 2>/dev/null || printf Unavailable)"
         printf 'rom_enabled=%s\n' "$(setting charging_control_enabled 2>/dev/null || printf Unavailable)"
         diagnostic_service=$(timeout -s KILL 3 /system/bin/dumpsys lineagehealth 2>/dev/null) || diagnostic_service=
-        for diagnostic_pair in rom_service_enabled:Enabled: rom_service_active:mIsEnabled: rom_mode:Mode: rom_limit:Limit:; do
-            diagnostic_key=${diagnostic_pair%%:*}
-            diagnostic_label=${diagnostic_pair#*:}
-            diagnostic_value=$(printf '%s\n' "$diagnostic_service" | awk -v key="$diagnostic_label" '$1 == key {print $2; exit}')
-            case "$diagnostic_key" in
-                rom_service_enabled|rom_service_active)
-                    case "$diagnostic_value" in true) diagnostic_value=1 ;; false) diagnostic_value=0 ;; *) diagnostic_value=Unavailable ;; esac ;;
-                rom_mode|rom_limit)
-                    case "$diagnostic_value" in ''|*[!0-9]*) diagnostic_value=Unavailable ;; esac ;;
-            esac
-            printf '%s=%s\n' "$diagnostic_key" "$diagnostic_value"
-        done ;;
+        printf '%s\n' "$diagnostic_service" | awk '
+            ($1 == "Enabled:" || $1 == "mIsEnabled:" || $1 == "Mode:" || $1 == "Limit:") && !($1 in value) {value[$1]=$2}
+            function boolean(label) {
+                if (value[label] == "true") return "1"
+                if (value[label] == "false") return "0"
+                return "Unavailable"
+            }
+            function number(label) {return value[label] ~ /^[0-9]+$/ ? value[label] : "Unavailable"}
+            END {
+                print "rom_service_enabled=" boolean("Enabled:")
+                print "rom_service_active=" boolean("mIsEnabled:")
+                print "rom_mode=" number("Mode:")
+                print "rom_limit=" number("Limit:")
+            }
+        ' ;;
     sensors)
         [ "$(getenforce)" = Enforcing ] && [ "$(cat "$B/sw_jeita_enabled")" = 1 ] &&
             [ "$(cat "$B/health")" = Good ] && node || exit 1
