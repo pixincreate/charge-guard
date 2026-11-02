@@ -6,6 +6,11 @@ The import preserves production logic and adds license notices, cleaned document
 The latest snapshot includes the available regression tests after fixture cleanup.
 Original release ZIPs are not tracked; the signed tags record their SHA-256 hashes.
 
+## 1.0.5
+
+- Rename the module to Charge Guard without changing its internal ID.
+- Add state explanations, duration, next threshold, battery readings, and safety diagnostics.
+
 ## 1.0.4
 
 - Resolve the Action script directory to an absolute path for Magisk's relative invocation.

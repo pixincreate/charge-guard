@@ -41,7 +41,20 @@ identity() {
 }
 fault() { printf '%s\n' "$*" > "$state/fault"; }
 status() {
+    status_previous=$(cat "$state/status" 2>/dev/null) || status_previous=
     printf '%s\n' "$1" > "$state/status" || return 1
+    if [ "$status_previous" != "$1" ] || [ ! -f "$state/state-entry" ]; then
+        # State duration is reporting-only and does not reset on a card refresh.
+        status_time=$(clock) || status_time=
+        status_boot=$(cat "$state/boot" 2>/dev/null) || status_boot=
+        case "$status_time" in ''|*[!0-9]*) ;;
+            *)
+                if [ -n "$status_boot" ]; then
+                    { printf '%s %s %s\n' "$status_boot" "$1" "$status_time" > "$state/state-entry.next" &&
+                        mv "$state/state-entry.next" "$state/state-entry"; } || printf 'The state-entry time cannot update.\n' >&2
+                fi ;;
+        esac
+    fi
     # Reporting is bounded and best effort; it must not change control decisions.
     if [ "$1" != "${display_phase:-}" ] || [ "$((${now:-0} - ${display_checked:-0}))" -ge 60 ]; then
         display_phase=$1

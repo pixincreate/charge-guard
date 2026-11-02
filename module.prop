@@ -1,6 +1,6 @@
 id=lavender_battery_guard
-name=Lavender battery guard (70/65)
-version=1.0.4
-versionCode=5
+name=Charge Guard
+version=1.0.5
+versionCode=6
 author=PiX
 description=[Not started] Reboot to activate. Stop charging at 70%; resume at 65%. For the verified lavender kernel only.

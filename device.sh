@@ -110,9 +110,44 @@ limit_ready() {
     done
     return 1
 }
+diagnostic_number() {
+    diagnostic_value=$(cat "$2" 2>/dev/null) || diagnostic_value=Unavailable
+    diagnostic_digits=$diagnostic_value
+    [ "${3:-}" != signed ] || diagnostic_digits=${diagnostic_value#-}
+    case "$diagnostic_digits" in ''|*[!0-9]*) diagnostic_value=Unavailable ;;
+        *) [ "${#diagnostic_digits}" -le 10 ] && [ "$diagnostic_digits" -le 2147483647 ] || diagnostic_value=Unavailable ;;
+    esac
+    printf '%s=%s\n' "$1" "$diagnostic_value"
+}
 case "$operation" in
     boot) boot ;;
     compatible) compatible ;;
+    diagnostics)
+        # Optional, read-only observations. Never use USB input-current ADC as adapter power.
+        diagnostic_number current_ua "$B/current_now" signed
+        diagnostic_number voltage_uv "$B/voltage_now"
+        diagnostic_number profile_fcc_ua "$B/constant_charge_current_max"
+        diagnostic_number main_fcc_ua "$M/constant_charge_current_max"
+        diagnostic_number jeita "$B/sw_jeita_enabled"
+        diagnostic_health=$(cat "$B/health" 2>/dev/null) || diagnostic_health=Unavailable
+        printf 'battery_health=%s\n' "$diagnostic_health"
+        printf 'selinux=%s\n' "$(getenforce 2>/dev/null || printf Unavailable)"
+        if kernel; then printf 'kernel_match=Verified\n'; else printf 'kernel_match=Unverified\n'; fi
+        printf 'kernel_release=%s\n' "$(uname -r 2>/dev/null || printf Unavailable)"
+        printf 'rom_enabled=%s\n' "$(setting charging_control_enabled 2>/dev/null || printf Unavailable)"
+        diagnostic_service=$(timeout -s KILL 3 /system/bin/dumpsys lineagehealth 2>/dev/null) || diagnostic_service=
+        for diagnostic_pair in rom_service_enabled:Enabled: rom_service_active:mIsEnabled: rom_mode:Mode: rom_limit:Limit:; do
+            diagnostic_key=${diagnostic_pair%%:*}
+            diagnostic_label=${diagnostic_pair#*:}
+            diagnostic_value=$(printf '%s\n' "$diagnostic_service" | awk -v key="$diagnostic_label" '$1 == key {print $2; exit}')
+            case "$diagnostic_key" in
+                rom_service_enabled|rom_service_active)
+                    case "$diagnostic_value" in true) diagnostic_value=1 ;; false) diagnostic_value=0 ;; *) diagnostic_value=Unavailable ;; esac ;;
+                rom_mode|rom_limit)
+                    case "$diagnostic_value" in ''|*[!0-9]*) diagnostic_value=Unavailable ;; esac ;;
+            esac
+            printf '%s=%s\n' "$diagnostic_key" "$diagnostic_value"
+        done ;;
     sensors)
         [ "$(getenforce)" = Enforcing ] && [ "$(cat "$B/sw_jeita_enabled")" = 1 ] &&
             [ "$(cat "$B/health")" = Good ] && node || exit 1

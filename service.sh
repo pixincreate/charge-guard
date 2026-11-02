@@ -19,6 +19,7 @@ publish() {
     /system/bin/timeout --foreground -s TERM -k 1 2 setsid sh "$STATE/bin/bounded-command.sh" \
         sh "$STATE/bin/display.sh" publish "$STATE" "$MODDIR" "$1" || true
 }
+rm -f "$STATE/state-entry"
 printf 'Starting\n' > "$STATE/status"
 publish Starting
 remaining=60
